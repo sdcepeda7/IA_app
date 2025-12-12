@@ -1,2 +1,23 @@
+# Dependencias del proyecto 
 node_modules
+
+# Variables de entorno (SEGURIDAD CRÍTICA)
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de logs (por si algo falla, no ensuciar el repo)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de sistema operativo (Mac/Windows)
+.DS_Store
+Thumbs.db
+
+# Carpetas de construcción (builds)
+dist
+build
+.next
