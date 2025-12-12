@@ -57,7 +57,7 @@ const MainTool: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [apiKey, setApiKey] = useState<string>(
-    process.env.REACT_APP_GEMINI_API_KEY
+    process.env.REACT_APP_GEMINI_API_KEY || ""
   );
 
   const [selectedModel, setSelectedModel] = useState<string>(MODELS[0].id);
