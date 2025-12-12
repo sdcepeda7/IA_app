@@ -82,11 +82,11 @@ const MainTool: React.FC = () => {
   const [analysisOutput, setAnalysisOutput] = useState<string>("");
   const [loadingFeature, setLoadingFeature] = useState<boolean>(false);
 
-  // CONTROL DE REINTENTOS
+  // --- REFS ---
   const retryCount = useRef<number>(0);
   const mermaidRef = useRef<HTMLDivElement>(null);
 
-  // --- ESTADOS PARA ZOOM Y PAN ---
+  // --- ESTADOS ZOOM/PAN ---
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -98,7 +98,7 @@ const MainTool: React.FC = () => {
   const defaultPrompt =
     "Escribe un enunciado... \nEjemplo: Una universidad ofrece cursos impartidos por profesores. Los estudiantes se inscriben en cursos y obtienen una calificación. Cada curso pertenece a un departamento.";
 
-  // --- INICIALIZACIÓN ---
+  // --- INICIALIZACION MERMAID ---
   useEffect(() => {
     const initMermaid = () => {
       if (window.mermaid) {
@@ -132,7 +132,7 @@ const MainTool: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // --- RENDERIZADO ---
+  // --- EFECTO RENDERIZADO ---
   useEffect(() => {
     if (
       activeTab === "diagram" &&
@@ -144,7 +144,7 @@ const MainTool: React.FC = () => {
     }
   }, [diagramCode, mermaidLoaded, activeTab]);
 
-  // --- LÓGICA DE ZOOM Y PAN ---
+  // --- LOGICA ZOOM/PAN ---
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 1, 10));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 1, 0.9));
   const resetView = () => {
@@ -169,7 +169,7 @@ const MainTool: React.FC = () => {
     setIsDragging(false);
   };
 
-  // --- FUNCIÓN DE RENDERIZADO ---
+  // --- RENDERIZADO DIAGRAMA ---
   const renderDiagram = async () => {
     const element = mermaidRef.current;
     if (!element || !window.mermaid) return;
@@ -200,7 +200,7 @@ const MainTool: React.FC = () => {
     }
   };
 
-  // --- LLAMADA A GEMINI ---
+  // --- API GEMINI ---
   const callGeminiAPI = async (prompt: string): Promise<string | null> => {
     if (!apiKey) {
       setError("Falta la API Key.");
@@ -228,7 +228,7 @@ const MainTool: React.FC = () => {
     }
   };
 
-  // --- FUNCIÓN DE LIMPIEZA ---
+  // --- LIMPIEZA CODIGO ---
   const sanitizeMermaidCode = (code: string): string => {
     let clean = code
       .replace(/```mermaid/g, "")
@@ -256,7 +256,7 @@ const MainTool: React.FC = () => {
     return clean;
   };
 
-  // --- FUNCIONES LÓGICAS ---
+  // --- GENERACION DIAGRAMA ---
   const generateDiagram = async () => {
     if (!inputText.trim()) {
       setError("Escribe una descripción.");
@@ -265,8 +265,8 @@ const MainTool: React.FC = () => {
     setLoading(true);
     setError(null);
     setDiagramCode("");
-    setSqlOutput("");
-    setAnalysisOutput("");
+    setSqlOutput(""); // Se limpia el SQL previo
+    setAnalysisOutput(""); // Se limpia la auditoria previa
     setActiveTab("diagram");
 
     if (mermaidRef.current) mermaidRef.current.innerHTML = "";
@@ -288,6 +288,7 @@ const MainTool: React.FC = () => {
     }
   };
 
+  // --- GENERACION SQL ---
   const generateSQL = async () => {
     if (!diagramCode) return;
     setLoadingFeature(true);
@@ -315,6 +316,7 @@ const MainTool: React.FC = () => {
     }
   };
 
+  // --- ANALISIS AUDITORIA ---
   const analyzeSchema = async () => {
     if (!diagramCode) return;
     setLoadingFeature(true);
@@ -330,6 +332,7 @@ const MainTool: React.FC = () => {
     }
   };
 
+  // --- APLICAR CORRECCIONES ---
   const applyFixes = async () => {
     if (!diagramCode || !analysisOutput) return;
     setIsFixing(true);
@@ -353,8 +356,9 @@ const MainTool: React.FC = () => {
       if (result) {
         const cleanCode = sanitizeMermaidCode(result);
         setDiagramCode(cleanCode);
-        setActiveTab("diagram"); // Te lleva de vuelta al diagrama para que veas el cambio
-        setSqlOutput(""); // Limpiamos el SQL viejo porque el modelo cambió
+        setActiveTab("diagram");
+        setSqlOutput(""); // Limpia SQL al aplicar correcciones
+        setAnalysisOutput(""); // Limpia auditoria al aplicar correcciones
         setError(null);
       }
     } catch (err: any) {
@@ -364,6 +368,7 @@ const MainTool: React.FC = () => {
     }
   };
 
+  // --- UTILIDADES ---
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -592,8 +597,11 @@ const MainTool: React.FC = () => {
                 <button
                   key={tab}
                   onClick={() => {
-                    if (tab === "sql" && diagramCode) generateSQL();
-                    if (tab === "analysis" && diagramCode) analyzeSchema();
+                    // SECCION LOGICA PESTAÑAS
+                    if (tab === "sql" && diagramCode && !sqlOutput)
+                      generateSQL();
+                    if (tab === "analysis" && diagramCode && !analysisOutput)
+                      analyzeSchema();
                     if (tab === "diagram" || tab === "code" || diagramCode)
                       setActiveTab(tab as any);
                   }}
@@ -657,7 +665,7 @@ const MainTool: React.FC = () => {
                     <Check className="w-3 h-3 text-green-500" />
                   ) : (
                     <Copy className="w-3 h-3" />
-                  )}{" "}
+                  )}
                   Copiar
                 </button>
               )}
@@ -667,12 +675,12 @@ const MainTool: React.FC = () => {
           <div className="flex-1 relative overflow-hidden flex flex-col">
             {error && (
               <div className="absolute top-4 left-4 right-4 z-50 bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg flex items-start gap-3 text-sm backdrop-blur-md">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />{" "}
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>{error}</div>
               </div>
             )}
 
-            {/* --- ÁREA DE DIAGRAMA --- */}
+            {/* --- SECCION DIAGRAMA --- */}
             <div
               className={`flex-1 overflow-hidden relative flex flex-col ${
                 activeTab !== "diagram" ? "hidden" : ""
@@ -693,18 +701,31 @@ const MainTool: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {/* CONTROLES DE ZOOM */}
-                  <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-2 bg-white/90 backdrop-blur shadow-lg rounded-xl p-2 border border-slate-200 dark:bg-slate-900/90 dark:border-slate-700">
+                  <div
+                    className={`absolute bottom-6 right-6 z-20 flex flex-col gap-2 rounded-xl p-2 shadow-lg border ${
+                      isDarkMode
+                        ? "bg-slate-900/70 border-slate-700 backdrop-blur"
+                        : "bg-white/70 border-slate-200 backdrop-blur"
+                    }`}
+                  >
                     <button
                       onClick={handleZoomIn}
-                      className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-slate-300"
+                          : "hover:bg-slate-200 text-slate-700"
+                      }`}
                       title="Acercar"
                     >
                       <ZoomIn className="w-5 h-5" />
                     </button>
                     <button
                       onClick={handleZoomOut}
-                      className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-slate-300"
+                          : "hover:bg-slate-200 text-slate-700"
+                      }`}
                       title="Alejar"
                     >
                       <ZoomOut className="w-5 h-5" />
@@ -712,14 +733,17 @@ const MainTool: React.FC = () => {
                     <div className="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
                     <button
                       onClick={resetView}
-                      className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-slate-300"
+                          : "hover:bg-slate-200 text-slate-700"
+                      }`}
                       title="Resetear vista"
                     >
                       <RotateCcw className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* CONTENEDOR ARRASTRABLE */}
                   <div
                     className="flex-1 w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
                     onMouseDown={handleMouseDown}
@@ -752,17 +776,18 @@ const MainTool: React.FC = () => {
                 activeTab !== "code" ? "hidden" : ""
               } ${
                 isDarkMode
-                  ? "bg-blue-5 text-slate-400"
+                  ? "bg-slate-950 text-slate-200"
                   : "bg-gray-50 text-slate-700 border-l border-slate-200"
               }`}
             >
               {diagramCode || "Genera el diagrama primero..."}
             </pre>
 
+            {/* --- SECCION SQL --- */}
             <div
               className={`flex-1 overflow-auto font-mono text-sm leading-relaxed ${
                 activeTab !== "sql" ? "hidden" : ""
-              } ${isDarkMode ? "bg-blue-5" : "bg-gray-50"}`}
+              } ${isDarkMode ? "bg-slate-950" : "bg-slate-300"}`}
             >
               {loadingFeature ? (
                 <div className="flex h-full items-center justify-center">
@@ -778,8 +803,10 @@ const MainTool: React.FC = () => {
                     margin: 0,
                     padding: "1.5rem",
                     height: "100%",
-                    background: "transparent",
                     fontSize: "14px",
+                    background: "transparent",
+                    fontFamily:
+                      'Menlo, Monaco, Consolas, "Courier New", monospace', // FUENTE FIX
                   }}
                 >
                   {sqlOutput ||
@@ -788,10 +815,11 @@ const MainTool: React.FC = () => {
               )}
             </div>
 
+            {/* --- SECCION AUDITORIA --- */}
             <div
               className={`flex-1 overflow-auto flex flex-col ${
                 activeTab !== "analysis" ? "hidden" : ""
-              } ${isDarkMode ? "bg-slate-900" : "bg-white"}`}
+              } ${isDarkMode ? "bg-slate-950" : "bg-white"}`}
             >
               {loadingFeature ? (
                 <div className="flex h-full items-center justify-center">
@@ -799,7 +827,6 @@ const MainTool: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {/* BARRA DE ACCIONES DE AUDITORÍA */}
                   {analysisOutput && (
                     <div
                       className={`p-4 border-b flex justify-between items-center ${
@@ -814,7 +841,6 @@ const MainTool: React.FC = () => {
                         Reporte de IA
                       </span>
 
-                      {/* BOTÓN MÁGICO DE CORRECCIÓN */}
                       <button
                         onClick={applyFixes}
                         disabled={isFixing}
@@ -836,7 +862,6 @@ const MainTool: React.FC = () => {
                     </div>
                   )}
 
-                  {/* CONTENIDO DEL TEXTO */}
                   <div
                     className={`p-8 prose max-w-none ${
                       isDarkMode ? "prose-invert" : ""
