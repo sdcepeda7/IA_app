@@ -18,6 +18,23 @@ interface LandingPageProps {
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+  const handleDonate = (e: React.MouseEvent, url: string) => {
+    e.preventDefault();
+
+    const width = 500;
+    const height = 2000;
+
+    // Cálculos para centrar la ventana en la pantalla del usuario
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    window.open(
+      url,
+      "DonacionPayPal", // Nombre interno de la ventana
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-blue-500 selection:text-white flex flex-col font-sans">
       {/* HEADER */}
@@ -31,11 +48,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           </span>
         </div>
         <div>
+          {/* BOTÓN DONAR HEADER MODIFICADO */}
           <a
             href="https://www.paypal.com/invoice/p/#PKZ7CZ8YESH878WV"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-2"
+            onClick={(e) =>
+              handleDonate(
+                e,
+                "https://www.paypal.com/invoice/p/#PKZ7CZ8YESH878WV"
+              )
+            }
+            className="text-sm font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> Donar 1$
           </a>
@@ -69,11 +91,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
 
+          {/* BOTÓN APOYAR PROYECTO MODIFICADO */}
           <a
             href="https://paypal.me/sdcepeda7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-8 py-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2"
+            onClick={(e) => handleDonate(e, "https://paypal.me/sdcepeda7")}
+            className="px-8 py-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <CreditCard className="w-5 h-5 text-slate-400" /> Apoyar Proyecto
           </a>
