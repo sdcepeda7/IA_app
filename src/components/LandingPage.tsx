@@ -24,13 +24,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
     const width = 500;
     const height = 2000;
 
-    // Cálculos para centrar la ventana en la pantalla del usuario
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
 
     window.open(
       url,
-      "DonacionPayPal", // Nombre interno de la ventana
+      "DonacionPayPal",
       `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
     );
   };
@@ -140,7 +139,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
       <footer className="border-t border-slate-900 bg-slate-950 mt-20 py-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
-            <p className="font-bold text-lg">Santiago Danilo Cepeda</p>
+            <p className="font-bold text-lg">Santiago Cepeda</p>
             <p className="text-slate-500 text-sm">
               Desarrollador Full Stack & Ing. de Datos
             </p>

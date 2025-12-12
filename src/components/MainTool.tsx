@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  vscDarkPlus,
+  vs,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   Database,
   Play,
@@ -747,32 +752,42 @@ const MainTool: React.FC = () => {
                 activeTab !== "code" ? "hidden" : ""
               } ${
                 isDarkMode
-                  ? "bg-blue text-slate-400"
+                  ? "bg-blue-5 text-slate-400"
                   : "bg-gray-50 text-slate-700 border-l border-slate-200"
               }`}
             >
               {diagramCode || "Genera el diagrama primero..."}
             </pre>
 
-            <pre
-              className={`flex-1 overflow-auto p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap ${
+            <div
+              className={`flex-1 overflow-auto font-mono text-sm leading-relaxed ${
                 activeTab !== "sql" ? "hidden" : ""
-              } ${
-                isDarkMode
-                  ? "bg-blue text-slate-100"
-                  : "bg-gray-50 text-slate-900 border-l border-slate-200"
-              }`}
+              } ${isDarkMode ? "bg-blue-5" : "bg-gray-50"}`}
             >
               {loadingFeature ? (
                 <div className="flex h-full items-center justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
                 </div>
               ) : (
-                sqlOutput || "Genera el diagrama primero..."
+                <SyntaxHighlighter
+                  language="sql"
+                  style={isDarkMode ? vscDarkPlus : vs}
+                  showLineNumbers={true}
+                  wrapLongLines={true}
+                  customStyle={{
+                    margin: 0,
+                    padding: "1.5rem",
+                    height: "100%",
+                    background: "transparent",
+                    fontSize: "14px",
+                  }}
+                >
+                  {sqlOutput ||
+                    "-- Genera el diagrama primero para ver el código SQL..."}
+                </SyntaxHighlighter>
               )}
-            </pre>
+            </div>
 
-            {/* --- SECCIÓN DE ANÁLISIS (AUDITORÍA) MODIFICADA --- */}
             <div
               className={`flex-1 overflow-auto flex flex-col ${
                 activeTab !== "analysis" ? "hidden" : ""
